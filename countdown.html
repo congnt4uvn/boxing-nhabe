@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#132238">
+    <title>Dong Ho Dem Nguoc</title>
+    <link rel="stylesheet" href="countdown.css">
+</head>
+<body>
+    <main class="app-shell">
+        <header class="mode-switch" aria-label="Chon thoi gian dem nguoc">
+            <button class="mode-button" type="button" data-duration="120">120 giay</button>
+            <button class="mode-button is-active" type="button" data-duration="60">60 giay</button>
+            <button class="mode-button" type="button" data-duration="30">30 giay</button>
+        </header>
+
+        <section class="timer-panel" aria-live="polite" aria-atomic="true">
+            <p class="status-text" id="statusText">Cham vao 60 giay hoac 30 giay de bat dau am thanh</p>
+            <div class="timer-value" id="timerValue">60</div>
+            <p class="hint-text">Tu dong lap lai khi ve 0</p>
+        </section>
+    </main>
+
+    <script src="countdown.js"></script>
+</body>
+</html>
