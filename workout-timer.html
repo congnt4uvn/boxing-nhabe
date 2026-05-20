@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Đồng hồ tập thể dục</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #111827;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            display: grid;
+            place-items: center;
+            padding: env(safe-area-inset-top, 16px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 16px) env(safe-area-inset-left, 16px);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 245, 249, 0.96));
+            transition: background 0.5s ease;
+            color: #111827;
+        }
+
+        body.state-work {
+            background: radial-gradient(circle at top, rgba(134, 239, 172, 0.35), transparent 35%),
+                linear-gradient(180deg, rgba(236, 253, 245, 1), rgba(220, 252, 231, 1));
+        }
+
+        body.state-rest {
+            background: radial-gradient(circle at top, rgba(254, 202, 202, 0.4), transparent 35%),
+                linear-gradient(180deg, rgba(254, 242, 242, 1), rgba(254, 226, 226, 1));
+        }
+
+        .page {
+            width: min(100%, 960px);
+            display: grid;
+            grid-template-rows: 10vh minmax(0, 1fr);
+            gap: 0;
+            min-height: calc(100vh - 32px);
+            height: calc(100vh - 32px);
+            align-items: stretch;
+            justify-items: center;
+            padding: 0 12px;
+        }
+
+        .panel {
+            border-radius: 24px;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+            backdrop-filter: blur(16px);
+            width: 100%;
+            max-width: 960px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 10vh;
+            margin-bottom: 0;
+        }
+
+        .panel h1 {
+            display: none;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            align-items: center;
+            width: 100%;
+            justify-items: stretch;
+        }
+
+        .field {
+            display: grid;
+            gap: 4px;
+            width: 100%;
+            max-width: none;
+            min-width: 0;
+        }
+
+        .field label {
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.01em;
+            color: #334155;
+        }
+
+        select,
+        button {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            padding: 6px 10px;
+            font-size: 0.85rem;
+            color: #111827;
+            background: rgba(255, 255, 255, 0.95);
+            transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+            min-height: 34px;
+            min-width: 0;
+        }
+
+        select:focus,
+        button:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .timer-card {
+            display: grid;
+            gap: 14px;
+            place-items: center;
+            border-radius: 32px;
+            min-height: 100%;
+            padding: 22px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.2), 0 24px 60px rgba(15, 23, 42, 0.12);
+            width: 100%;
+            max-width: 960px;
+            height: 100%;
+        }
+
+        .timer-state {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .page-title {
+            margin: 0;
+            color: #475569;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .timer-value {
+            margin: 0;
+            font-size: clamp(24rem, 90vw, 54rem);
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            line-height: 0.9;
+            color: #111827;
+            text-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+            transition: color 0.5s ease;
+        }
+
+        .hint {
+            margin: 0;
+            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .state-work {
+            background: radial-gradient(circle at top center, rgba(134, 239, 172, 0.25), transparent 30%),
+                linear-gradient(180deg, rgba(236, 253, 245, 0.95), rgba(220, 252, 231, 0.95));
+        }
+
+        .state-rest {
+            background: radial-gradient(circle at top center, rgba(254, 202, 202, 0.3), transparent 30%),
+                linear-gradient(180deg, rgba(254, 242, 242, 0.95), rgba(254, 226, 226, 0.95));
+        }
+
+        .state-work .timer-card {
+            background: rgba(219, 255, 227, 0.9);
+            border-color: rgba(34, 197, 94, 0.25);
+        }
+
+        .state-rest .timer-card {
+            background: rgba(248, 113, 113, 0.92);
+            border-color: rgba(185, 28, 28, 0.35);
+        }
+
+        .state-work .timer-value {
+            color: #064e3b;
+        }
+
+        .state-rest .timer-value {
+            color: #7f1d1d;
+        }
+
+        .small-text {
+            color: rgba(248, 250, 252, 0.62);
+            font-size: 0.88rem;
+        }
+
+        @media (max-width: 640px) {
+            .page {
+                height: auto;
+                padding: 0 12px;
+            }
+
+            .panel {
+                padding: 10px;
+                min-height: auto;
+            }
+
+            .controls {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 6px;
+            }
+
+            .field {
+                gap: 2px;
+            }
+
+            .timer-card {
+                min-height: 320px;
+                padding: 18px;
+            }
+
+            .timer-value {
+                font-size: clamp(5rem, 28vw, 12rem);
+            }
+        }
+
+        @media (min-width: 640px) {
+            .controls {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body class="state-work">
+    <main class="page">
+        <section class="panel">
+            <div class="controls">
+                <div class="field">
+                    <label for="workDuration">Thời gian tập</label>
+                    <select id="workDuration"></select>
+                </div>
+                <div class="field">
+                    <label for="restDuration">Thời gian nghỉ</label>
+                    <select id="restDuration"></select>
+                </div>
+                <div class="field">
+                    <label>&nbsp;</label>
+                    <button id="startButton" type="button">Bắt đầu</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="timer-card" aria-live="polite">
+            <p class="page-title">Đồng hồ tập thể dục</p>
+            <p class="timer-state" id="timerState">Chu kỳ tập</p>
+            <p class="timer-value" id="timerValue">00</p>
+            <p class="hint" id="hintText">Chọn thời gian và nhấn Bắt đầu để bắt đầu phiên tập</p>
+        </section>
+    </main>
+
+    <script>
+        const workSelect = document.getElementById('workDuration');
+        const restSelect = document.getElementById('restDuration');
+        const startButton = document.getElementById('startButton');
+        const timerValue = document.getElementById('timerValue');
+        const timerState = document.getElementById('timerState');
+        const hintText = document.getElementById('hintText');
+        const body = document.body;
+
+        const maxSeconds = 500;
+        for (let seconds = 10; seconds <= maxSeconds; seconds += 10) {
+            const optionText = `${seconds} giây`;
+            const option = document.createElement('option');
+            option.value = String(seconds);
+            option.textContent = optionText;
+            workSelect.append(option.cloneNode(true));
+            restSelect.append(option);
+        }
+
+        workSelect.value = '30';
+        restSelect.value = '10';
+
+        let timerId = null;
+        let currentPhase = 'work';
+        let remainingSeconds = 0;
+        let isRunning = false;
+        let workDuration = Number(workSelect.value);
+        let restDuration = Number(restSelect.value);
+        let isAudioReady = false;
+
+        const spokenMoments = new Set([120, 110, 100, 60, 50, 40, 30, 20, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
+        const audioCache = new Map();
+
+        function prepareAudio() {
+            if (audioCache.size > 0) {
+                return;
+            }
+            for (const secondMark of spokenMoments) {
+                const audio = new Audio(`audio/${secondMark}.mp3`);
+                audio.preload = 'auto';
+                audioCache.set(secondMark, audio);
+            }
+        }
+
+        function warmAudioCache() {
+            prepareAudio();
+            for (const audio of audioCache.values()) {
+                audio.load();
+            }
+        }
+
+        function speakNumber(value) {
+            if (!isAudioReady || !spokenMoments.has(value)) {
+                return;
+            }
+            const audio = audioCache.get(value);
+            if (!audio) {
+                return;
+            }
+            audio.pause();
+            audio.currentTime = 0;
+            audio.play().catch(() => {
+            });
+        }
+
+        function formatSeconds(seconds) {
+            return String(seconds).padStart(2, '0');
+        }
+
+        function updateDisplay() {
+            timerValue.textContent = formatSeconds(remainingSeconds);
+            timerState.textContent = currentPhase === 'work' ? 'Đang tập' : 'Đang nghỉ';
+            hintText.textContent = isRunning
+                ? 'Bấm Dừng nếu muốn tạm dừng hoặc đợi chu kỳ tiếp theo.'
+                : 'Chọn thời gian và nhấn Bắt đầu để bắt đầu phiên tập';
+            body.classList.toggle('state-work', currentPhase === 'work');
+            body.classList.toggle('state-rest', currentPhase === 'rest');
+        }
+
+        function setPhase(phase) {
+            currentPhase = phase;
+            remainingSeconds = phase === 'work' ? workDuration : restDuration;
+            updateDisplay();
+        }
+
+        function tick() {
+            remainingSeconds -= 1;
+            if (remainingSeconds <= 0) {
+                setPhase(currentPhase === 'work' ? 'rest' : 'work');
+                speakNumber(remainingSeconds);
+                return;
+            }
+            updateDisplay();
+            speakNumber(remainingSeconds);
+        }
+
+        function startTimer() {
+            if (isRunning) {
+                stopTimer();
+                return;
+            }
+            workDuration = Number(workSelect.value);
+            restDuration = Number(restSelect.value);
+            if (workDuration <= 0 || restDuration <= 0) {
+                alert('Vui lòng chọn thời gian tập và nghỉ hợp lệ.');
+                return;
+            }
+            isRunning = true;
+            startButton.textContent = 'Dừng';
+            workSelect.disabled = true;
+            restSelect.disabled = true;
+            warmAudioCache();
+            isAudioReady = true;
+            setPhase('work');
+            speakNumber(remainingSeconds);
+            timerId = window.setInterval(tick, 1000);
+        }
+
+        function stopTimer() {
+            isRunning = false;
+            startButton.textContent = 'Bắt đầu';
+            workSelect.disabled = false;
+            restSelect.disabled = false;
+            window.clearInterval(timerId);
+            hintText.textContent = 'Phiên tập đã dừng. Nhấn Bắt đầu để tiếp tục.';
+        }
+
+        startButton.addEventListener('click', startTimer);
+
+        updateDisplay();
+    </script>
+</body>
+</html>
